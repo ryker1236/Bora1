@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>For Bora</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --cream: #FAF6F0;
+  --paper: #FFFDF9;
+  --brown: #3A2A1E;
+  --accent: #C4784A;
+  --muted: #A07850;
+  --light: #EAE0D4;
+  --text: #4A3728;
+}
+html, body { height: 100%; background: var(--cream); font-family: 'Lato', sans-serif; overflow: hidden; }
+
+/* Petals */
+.petals { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.petal { position: absolute; top: -30px; opacity: 0; animation: fall linear infinite; }
+@keyframes fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 0; }
+  5%   { opacity: 0.5; }
+  90%  { opacity: 0.35; }
+  100% { transform: translateY(110vh) rotate(380deg); opacity: 0; }
+}
+
+/* Scenes */
+.scene { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 1; transition: opacity 0.5s ease; }
+.scene.hidden { opacity: 0; pointer-events: none; }
+
+/* Scene 1: Envelope */
+#scene-envelope { flex-direction: column; gap: 1.4rem; }
+.hint-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; opacity: 0; animation: fadeUp 1s ease 0.7s forwards; }
+.from-text { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 1.5rem; color: var(--brown); letter-spacing: 0.02em; }
+.hint { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.15rem; color: var(--muted); letter-spacing: 0.06em; }
+.hint-arrow { font-size: 1.1rem; color: var(--accent); animation: bounce 1.4s ease infinite; }
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(7px); } }
+@keyframes fadeUp { to { opacity: 1; } }
+.love-bubble { position: fixed; pointer-events: none; z-index: 5; opacity: 0; animation: bubbleRise ease forwards; }
+@keyframes bubbleRise { 0% { transform: translateY(0) scale(0.3); opacity: 0; } 15% { opacity: 1; } 70% { opacity: 0.85; } 100% { transform: translateY(-280px) scale(1.15) rotate(15deg); opacity: 0; } }
+
+.envelope-wrap { cursor: pointer; -webkit-tap-highlight-color: transparent; opacity: 0; animation: fadeUp 1s ease 0.2s forwards; }
+.envelope { width: 280px; height: 190px; position: relative; filter: drop-shadow(0 8px 28px rgba(120,70,40,0.18)); transition: transform 0.2s ease; }
+.envelope-wrap:hover .envelope { transform: scale(1.03); }
+.envelope-wrap:active .envelope { transform: scale(0.97); }
+
+.env-body { position: absolute; inset: 0; background: #F7EDE0; border-radius: 4px; overflow: hidden; }
+.env-body::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 100%; background: linear-gradient(135deg, #E8D8C4 50%, transparent 50%), linear-gradient(225deg, #E8D8C4 50%, transparent 50%); background-size: 50% 50%; background-position: left bottom, right bottom; background-repeat: no-repeat; }
+.env-body::after { content: ''; position: absolute; inset: 0; background: linear-gradient(315deg, #DDD0BE 50%, transparent 50%), linear-gradient(45deg, #DDD0BE 50%, transparent 50%); background-size: 50% 100%; background-position: left, right; background-repeat: no-repeat; }
+
+.env-seal { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 3; width: 38px; height: 38px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; font-weight: 600; box-shadow: 0 2px 8px rgba(196,120,74,0.4); transition: transform 0.4s ease, opacity 0.4s ease; pointer-events: none; }
+.env-flap { position: absolute; top: 0; left: 0; right: 0; height: 50%; transform-origin: top center; transform-style: preserve-3d; z-index: 4; transition: transform 0.7s cubic-bezier(0.4,0,0.2,1); }
+.env-flap-inner { width: 100%; height: 100%; clip-path: polygon(0 0, 100% 0, 50% 100%); background: #EFE0CC; border-radius: 4px 4px 0 0; }
+.env-letter-peek { position: absolute; bottom: 10px; left: 14px; right: 14px; height: 0; background: var(--paper); border-radius: 3px; z-index: 2; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); transition: height 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.55s; }
+
+.envelope.opening .env-flap { transform: rotateX(-180deg); }
+.envelope.opening .env-seal { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+.envelope.opening .env-letter-peek { height: 55px; }
+
+/* Scene 2: Letter */
+#scene-letter { align-items: flex-start; padding: 2rem 1rem; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.letter-card { background: var(--paper); border-radius: 3px; max-width: 420px; width: 100%; margin: 0 auto; padding: 2.5rem 2rem 2rem; box-shadow: 0 2px 8px rgba(120,80,60,0.07), 0 12px 40px rgba(120,80,60,0.1); border-top: 3px solid var(--accent); transform: translateY(40px); opacity: 0; transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.7s ease; }
+.letter-card.visible { transform: translateY(0); opacity: 1; }
+.letter-card::before { content: ''; display: block; width: 36px; height: 1px; background: var(--accent); margin: 0 auto 1.8rem; opacity: 0.4; }
+
+.to-line { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300; font-size: 0.95rem; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+.name { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 2.1rem; color: var(--brown); line-height: 1.1; margin-bottom: 1.8rem; }
+.divider { height: 1px; background: linear-gradient(to right, transparent, #D4956A55, transparent); margin-bottom: 1.8rem; }
+
+.para { font-family: 'Cormorant Garamond', serif; font-size: 1.12rem; line-height: 1.85; color: var(--text); opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease, transform 0.6s ease; margin-bottom: 1rem; }
+.para:last-of-type { margin-bottom: 0; }
+.para.visible { opacity: 1; transform: translateY(0); }
+.para em { font-style: italic; color: #8A5A3A; }
+
+.next-btn { display: flex; align-items: center; gap: 8px; margin-top: 1.8rem; cursor: pointer; background: none; border: 1px solid var(--accent); border-radius: 2px; padding: 0.6rem 1.2rem; font-family: 'Lato', sans-serif; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); -webkit-tap-highlight-color: transparent; opacity: 0; transform: translateY(8px); transition: opacity 0.5s ease, transform 0.5s ease, background 0.2s, color 0.2s; }
+.next-btn.visible { opacity: 1; transform: translateY(0); }
+.next-btn:hover, .next-btn:active { background: var(--accent); color: #fff; }
+.next-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.sign-off { margin-top: 2rem; text-align: right; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.sign-off.visible { opacity: 1; transform: translateY(0); }
+.sign-label { font-family: 'Lato', sans-serif; font-weight: 300; font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.25rem; }
+.sign-name { font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 300; font-size: 1.65rem; color: var(--brown); }
+
+.response-wrap { margin-top: 2rem; border-top: 1px solid var(--light); padding-top: 1.5rem; opacity: 0; transform: translateY(12px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.response-wrap.visible { opacity: 1; transform: translateY(0); }
+.response-label { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--muted); text-align: center; margin-bottom: 1rem; }
+.response-btns { display: flex; gap: 10px; }
+.resp-btn { flex: 1; padding: 0.7rem 0.5rem; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; border-radius: 2px; cursor: pointer; border: 1px solid; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+.resp-btn.yes { background: var(--accent); border-color: var(--accent); color: #fff; }
+.resp-btn.yes:hover { background: #B36840; border-color: #B36840; }
+.resp-btn.not-yet { background: transparent; border-color: var(--light); color: var(--muted); }
+.resp-btn.not-yet:hover { border-color: var(--muted); }
+
+/* Scene 3: Response */
+#scene-response { flex-direction: column; padding: 2rem 1.5rem; }
+.response-card { max-width: 380px; width: 100%; text-align: center; opacity: 0; transform: scale(0.9); transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+.response-card.visible { opacity: 1; transform: scale(1); }
+.response-emoji { font-size: 3.5rem; margin-bottom: 1.2rem; display: block; }
+.response-emoji.pulse { animation: pulse 1.6s ease infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+.response-title { font-family: 'Cormorant Garamond', serif; font-weight: 600; font-size: 1.9rem; color: var(--brown); margin-bottom: 0.8rem; line-height: 1.2; }
+.response-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; color: var(--muted); line-height: 1.7; }
+.back-btn { margin-top: 2rem; background: none; border: 1px solid var(--light); border-radius: 2px; padding: 0.6rem 1.4rem; font-family: 'Lato', sans-serif; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: border-color 0.2s, color 0.2s; -webkit-tap-highlight-color: transparent; }
+.back-btn:hover { border-color: var(--muted); color: var(--brown); }
+
+/* Hearts burst */
+.hearts-burst { position: fixed; inset: 0; pointer-events: none; z-index: 10; overflow: hidden; }
+.heart-particle { position: absolute; opacity: 0; animation: heartFly 1.4s ease forwards; }
+@keyframes heartFly { 0% { transform: translateY(0) scale(0.5); opacity: 1; } 60% { opacity: 1; } 100% { transform: translateY(-200px) scale(1.3) rotate(15deg); opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div class="petals" id="petals"></div>
+<div class="hearts-burst" id="hearts-burst"></div>
+
+<!-- Scene 1: Envelope -->
+<div class="scene" id="scene-envelope">
+  <div class="hint-wrap">
+    <p class="from-text">From Louis</p>
+    <p class="hint">open here</p>
+    <span class="hint-arrow">&#8595;</span>
+  </div>
+  <div class="envelope-wrap" id="envelope-wrap">
+    <div class="envelope" id="envelope">
+      <div class="env-body"></div>
+      <div class="env-flap"><div class="env-flap-inner"></div></div>
+      <div class="env-seal">&#9825;</div>
+      <div class="env-letter-peek"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 2: Letter -->
+<div class="scene hidden" id="scene-letter">
+  <div class="letter-card" id="letter-card">
+    <p class="to-line">for,</p>
+    <h1 class="name">Bora</h1>
+    <div class="divider"></div>
+
+    <p class="para" id="p1">I haven't been fully honest with you, and that's on me. You deserve someone who gives you the truth — even when it's uncomfortable — and I let you down in that.</p>
+    <p class="para" id="p2">Keeping things from you wasn't protecting you. I know that now. It was just easier for me in the moment, and that was selfish. You deserved better than half-truths.</p>
+    <p class="para" id="p3">You've always been a good and honest person to me, and it <em>truly</em> hurts to know that I caused you this kind of pain. You didn't deserve that — not even a little.</p>
+    <p class="para" id="p4">I'm sorry, Bora. Truly and deeply sorry.</p>
+
+    <button class="next-btn" id="next-btn">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
+      continue
+    </button>
+
+
+
+    <div class="response-wrap" id="response-wrap">
+      <p class="response-label">I mean every word &nbsp;&#9825;</p>
+    </div>
+  </div>
+</div>
+
+<!-- Scene 3: Response -->
+<div class="scene hidden" id="scene-response">
+  <div class="response-card" id="response-card">
+    <span class="response-emoji" id="response-emoji"></span>
+    <h2 class="response-title" id="response-title"></h2>
+    <p class="response-sub" id="response-sub"></p>
+    <button class="back-btn" id="back-btn">← read again</button>
+  </div>
+</div>
+
+<script>
+// Petals
+const pc = document.getElementById('petals');
+const cols = ['#F5C5A3','#E8A898','#F0B8C8','#D4A57A','#F7D5C0'];
+for (let i = 0; i < 20; i++) {
+  const p = document.createElement('div');
+  p.className = 'petal';
+  const sz = 10 + Math.random() * 14;
+  const cl = cols[Math.floor(Math.random() * cols.length)];
+  p.style.cssText = `left:${Math.random()*100}vw;animation-delay:${Math.random()*16}s;animation-duration:${11+Math.random()*10}s`;
+  p.innerHTML = `<svg width="${sz}" height="${sz*1.4}" viewBox="0 0 20 28"><ellipse cx="10" cy="14" rx="7" ry="12" fill="${cl}" opacity="0.7"/></svg>`;
+  pc.appendChild(p);
+}
+
+function showScene(id) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// Envelope
+const ew = document.getElementById('envelope-wrap');
+const env = document.getElementById('envelope');
+let opened = false;
+
+function openEnvelope() {
+  if (opened) return;
+  opened = true;
+  ew.style.pointerEvents = 'none';
+  env.classList.add('opening');
+
+  // Love bubbles burst from envelope center
+  const rect = env.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const symbols = ['♡','♡','♡','✦','♡','❀','♡'];
+  const colors = ['#E88C8C','#D4785A','#F0A0A0','#C47A9A','#E8B4A0','#D48080'];
+  for (let i = 0; i < 24; i++) {
+    const b = document.createElement('div');
+    b.className = 'love-bubble';
+    b.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    const spread = (Math.random() - 0.5) * 180;
+    const dur = 0.9 + Math.random() * 0.8;
+    const delay = Math.random() * 0.45;
+    const sz = 0.9 + Math.random() * 1.4;
+    b.style.cssText = `left:${cx + spread}px;top:${cy}px;font-size:${sz}rem;color:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${dur}s;animation-delay:${delay}s;`;
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), (dur + delay + 0.1) * 1000);
+  }
+
+  setTimeout(() => {
+    showScene('scene-letter');
+    setTimeout(() => {
+      document.getElementById('letter-card').classList.add('visible');
+      setTimeout(showNextPara, 300);
+    }, 80);
+  }, 1200);
+}
+ew.addEventListener('click', openEnvelope);
+ew.addEventListener('touchend', e => { e.preventDefault(); openEnvelope(); });
+
+// Paragraphs
+const paras = ['p1','p2','p3','p4'];
+let cur = -1;
+
+function showNextPara() {
+  cur++;
+  if (cur >= paras.length) return;
+  const el = document.getElementById(paras[cur]);
+  setTimeout(() => {
+    el.classList.add('visible');
+    const btn = document.getElementById('next-btn');
+    if (cur < paras.length - 1) {
+      setTimeout(() => btn.classList.add('visible'), 450);
+    } else {
+      btn.classList.remove('visible');
+      setTimeout(() => {
+        setTimeout(() => document.getElementById('response-wrap').classList.add('visible'), 500);
+      }, 600);
+    }
+  }, 120);
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  document.getElementById('next-btn').classList.remove('visible');
+  setTimeout(showNextPara, 200);
+});
+
+document.getElementById('back-btn').addEventListener('click', () => {
+  document.getElementById('response-card').classList.remove('visible');
+  setTimeout(() => showScene('scene-letter'), 350);
+});
+
+function burstHearts() {
+  const hb = document.getElementById('hearts-burst');
+  hb.innerHTML = '';
+  for (let i = 0; i < 22; i++) {
+    const h = document.createElement('div');
+    h.className = 'heart-particle';
+    h.textContent = Math.random() > 0.3 ? '♡' : '✦';
+    h.style.cssText = `left:${15+Math.random()*70}vw;bottom:${10+Math.random()*35}vh;animation-delay:${Math.random()*0.5}s;animation-duration:${1.1+Math.random()*0.7}s;font-size:${1+Math.random()*1.3}rem;color:hsl(${10+Math.random()*20},70%,65%)`;
+    hb.appendChild(h);
+  }
+}
+</script>
+</body>
+</html>
